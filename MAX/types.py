@@ -10,7 +10,7 @@ class MAXObj(object):
 
 	def _parsetime(self,t):
 		proper_tz = ''.join(t.rsplit(':',1))
-		return datetime.datetime.strptime(proper_tz,"%Y-%m-%dT%H:%M:%S.%f%z").time().strftime("%I:%S %p")
+		return datetime.datetime.strptime(proper_tz,"%Y-%m-%dT%H:%M:%S.%f%z").time().strftime("%I:%M %p")
 
 class Person(MAXObj):
 	"""Generic person class based on MAX fields"""
