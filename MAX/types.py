@@ -71,10 +71,10 @@ class InfoSheet(MAXObj):
 				print("DCS report did not contain field: %s" % (field,))
 
 
-		self.meals = sorted(list(map(Meal,info['meals'])),key=lambda m: m.time)
+		self.meals = sorted(list(map(Meal,info['meals'])),key=lambda m: m._time)
 		self.messages = list(map(Message,info['messages']))
-		self.naps = sorted(list(map(Nap,info['naps'])),key=lambda n: n.start_time)
-		self.bathroom_visits = sorted(list(map(BathroomVisit, info['bathroom_visits'])),key=lambda b: b.time)
+		self.naps = sorted(list(map(Nap,info['naps'])),key=lambda n: n._start_time)
+		self.bathroom_visits = sorted(list(map(BathroomVisit, info['bathroom_visits'])),key=lambda b: b._time)
 
 class Meal(MAXObj):
 	def __init__(self, info):
@@ -82,7 +82,8 @@ class Meal(MAXObj):
 		for field in ['id','time_type','comment','created_at','updated_at']:
 			if field in info:
 				self.__dict__[field] = info[field]
-		self.time = self._parsetime(info['time'])
+		self._time = info['time']
+		self.time = self._parsetime(self._time)
 		self.foods = list(map(Food,info['entries_attributes']))	
 
 class Food(MAXObj):
@@ -108,6 +109,8 @@ class Nap(MAXObj):
 			if field in info:
 				self.__dict__[field] = info[field]
 
+		self._start_time = info['start_time']
+		self._end_time = info['end_time']
 		self.start_time = self._parsetime(info['start_time'])
 		self.end_time = self._parsetime(info['end_time'])
 
@@ -117,7 +120,7 @@ class BathroomVisit(MAXObj):
 		for field in ['id','type','diaper_type','bathroom_type','notes','created_at','updated_at']:
 			if field in info:
 				self.__dict__[field] = info[field]
-
+		self._time = info['time']
 		self.time = self._parsetime(info['time'])
 
 class Message(MAXObj):
