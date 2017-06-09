@@ -16,6 +16,12 @@ def noop(*args, **kwargs):
 def load_data():
 	MAX.connect()
 	student = MAX.get_student_detail(199)
+	student.rounded_image = url_to_icon(student.photo_url)
+
+	if student.current_room:
+		for t in student.current_room.teachers:
+			t.rounded_image = url_to_icon(t.photo_url,50)
+
 	GLib.idle_add(hide_spinner)
 	GLib.idle_add(show_info,student)
 
@@ -55,7 +61,9 @@ def show_info(student):
 
 	# Picture and Name
 	idBox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
-	student_icon = Gtk.Image.new_from_pixbuf(url_to_icon(student.photo_url))
+
+	img = student.rounded_image if hasattr(student,'rounded_image') else url_to_icon(student.photo_url)
+	student_icon = Gtk.Image.new_from_pixbuf(img)
 
 	nameBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
 	nameBox.pack_start(newLabel(f"<span font='Lato Medium 22'>{student.first_name} {student.last_name}</span>"), False, True, 5)
@@ -79,7 +87,8 @@ def show_info(student):
 		teachBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=0)
 		for t in student.current_room.teachers:
 			trow = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=2)
-			timg = Gtk.Image.new_from_pixbuf(url_to_icon(t.photo_url,50))
+			img = t.rounded_image if hasattr(t,'rounded_image') else url_to_icon(t.photo_url,50)
+			timg = Gtk.Image.new_from_pixbuf(img)
 			trow.pack_start(timg, False, True, 10)
 			trow.pack_start(newLabel(f"<span font='Lato Light 11'>{t}</span>"),False,True,0)
 			teachBox.pack_start(trow, False, True, 0)
