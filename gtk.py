@@ -107,11 +107,11 @@ def show_info(student):
 	napBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
 	for nap in student.info.naps:
 		napRow = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
-		napRow.pack_start(newLabel(f"<span font='Lato Light 18'>{nap.start_time} - </span>"), True, True, 0)
-		napRow.pack_start(newLabel(f"<span font='Lato Light 18'>{nap.end_time}</span>"), True, True, 0)
-		napRow.pack_start(newLabel("<span font='Lato Medium 16'>Duration: %dm %d sec</span>" % divmod(nap.duration,60)), True, True, 0)
+		napRow.pack_start(newLabel(f"<span font='Lato Light 17'>{nap.start_time} - </span>"), False, True, 0)
+		napRow.pack_start(newLabel(f"<span font='Lato Light 17'>{nap.end_time}</span>"), False, True, 0)
+		napRow.pack_start(newLabel("<span font='Lato Medium 16'>Duration: %dh %dm</span>" % divmod(nap.duration,60)), False, True, 0)
 
-		napBox.pack_start(napRow,True,True,0)
+		napBox.pack_start(napRow,False,True,0)
 	if not student.info.naps:
 		napBox.pack_start(newLabel("<span font='Lato Light 13'>None</span>"),True,True,0)
 	info.pack_start(napBox,False,True,0)
