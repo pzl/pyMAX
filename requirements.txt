@@ -1,1 +1,2 @@
 requests==2.17.3
+Pillow-SIMD==4.1.1.post0

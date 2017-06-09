@@ -4,7 +4,8 @@ gi.require_version('Gtk','3.0')
 from gi.repository import Gtk, GLib, GdkPixbuf, Gio
 import threading
 import urllib.request
-
+from PIL import Image, ImageOps, ImageDraw
+from io import BytesIO
 
 def noop(*args, **kwargs):
 	pass
@@ -21,8 +22,19 @@ def load_data():
 
 def url_to_icon(url,size=100):
 	response = urllib.request.urlopen(url)
-	stream = Gio.MemoryInputStream.new_from_data(response.read(),None)
+	img = Image.open(BytesIO(response.read()))
+
+	round_mask = Image.new('L',(size*3,size*3),0)
+	draw = ImageDraw.Draw(round_mask)
+	draw.ellipse((0,0,size*3,size*3),fill=255)
+	round_mask = round_mask.resize(img.size, Image.ANTIALIAS)
+	img.putalpha(round_mask)
+
+	rounded = BytesIO()
+	img.save(rounded, format='PNG')
+	stream = Gio.MemoryInputStream.new_from_data(rounded.getvalue(),None)
 	return GdkPixbuf.Pixbuf.new_from_stream_at_scale(stream, size,size,True, None)
+
 def newLabel(text):
 	label = Gtk.Label()
 	label.set_justify(Gtk.Justification.LEFT)
