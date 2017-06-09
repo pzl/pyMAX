@@ -68,11 +68,6 @@ def token_file_path(fp=None):
 
 def authenticate(username,password,token_file=None):
 	r = requests.post(URL_BASE + '/oauth/token',data={"username":username,"password":password,"grant_type":"password"})
-	print(r.request.url)
-	print(r.request.body)
-	print(r)
-	print(r.content)
-	print(r.headers)
 	j = r.json()
 
 	if not 'error' in j:
