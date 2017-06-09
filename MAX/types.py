@@ -1,3 +1,5 @@
+import datetime
+
 class MAXObj(object):
 	"""generic shared parent"""
 	def __init__(self):
@@ -5,6 +7,10 @@ class MAXObj(object):
 
 	def __repr__(self):
 		return f"{self.__class__.__name__}({self.__dict__})"	
+
+	def _parsetime(self,t):
+		proper_tz = ''.join(t.rsplit(':',1))
+		return datetime.datetime.strptime(proper_tz,"%Y-%m-%dT%H:%M:%S.%f%z").time().strftime("%I:%S %p")
 
 class Person(MAXObj):
 	"""Generic person class based on MAX fields"""
@@ -57,26 +63,26 @@ class InfoSheet(MAXObj):
 		super(InfoSheet, self).__init__()
 		for field in ["report_id","student_id","day","created_at","updated_at",
 					  "locked","sent","achievements","request_items",
-					  "teacher_notes","checked_in_at","checked_out_at","scheduled_check_in",
-					  "scheduled_check_out","parent_request"]:
+					  "teacher_notes","checked_in_at","checked_out_at","schedule_check_in",
+					  "schedule_check_out","parent_request"]:
 			if field in info:
 				self.__dict__[field] = info[field]
 			else:
 				print("DCS report did not contain field: %s" % (field,))
 
 
-		self.meals = list(map(Meal,info['meals']))
+		self.meals = sorted(list(map(Meal,info['meals'])),key=lambda m: m.time)
 		self.messages = list(map(Message,info['messages']))
-		self.naps = list(map(Nap,info['naps']))
-		self.bathroom_visits = list(map(BathroomVisit, info['bathroom_visits']))
+		self.naps = sorted(list(map(Nap,info['naps'])),key=lambda n: n.start_time)
+		self.bathroom_visits = sorted(list(map(BathroomVisit, info['bathroom_visits'])),key=lambda b: b.time)
 
 class Meal(MAXObj):
 	def __init__(self, info):
 		super(Meal, self).__init__()
-		for field in ['id','time','time_type','comment','created_at','updated_at']:
+		for field in ['id','time_type','comment','created_at','updated_at']:
 			if field in info:
 				self.__dict__[field] = info[field]
-
+		self.time = self._parsetime(info['time'])
 		self.foods = list(map(Food,info['entries_attributes']))	
 
 class Food(MAXObj):
@@ -98,16 +104,21 @@ class Food(MAXObj):
 class Nap(MAXObj):
 	def __init__(self, info):
 		super(Nap, self).__init__()
-		for field in ['id','start_time','end_time','duration','created_at','updated_at']:
+		for field in ['id','duration','created_at','updated_at']:
 			if field in info:
 				self.__dict__[field] = info[field]
+
+		self.start_time = self._parsetime(info['start_time'])
+		self.end_time = self._parsetime(info['end_time'])
 
 class BathroomVisit(MAXObj):
 	def __init__(self, info):
 		super(BathroomVisit, self).__init__()
-		for field in ['id','time','type','diaper_type','bathroom_type','notes','created_at','updated_at']:
+		for field in ['id','type','diaper_type','bathroom_type','notes','created_at','updated_at']:
 			if field in info:
 				self.__dict__[field] = info[field]
+
+		self.time = self._parsetime(info['time'])
 
 class Message(MAXObj):
 	"""MAX generic Message"""
