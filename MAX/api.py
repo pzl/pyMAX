@@ -35,7 +35,7 @@ def request(route,method='GET',params=None,data=None):
 	return r.json()
 
 
-def connect(username,password,token_file=None):
+def connect(username=None,password=None,token_file=None):
 	global token
 
 	token_file = token_file_path(token_file)
@@ -52,7 +52,8 @@ def connect(username,password,token_file=None):
 				else:
 					print("Error refreshing token: %s",(token,))
 
-
+	if not username or not password:
+		raise PasswordRequired("could not find a valid token, username and password must be provided")
 	token = authenticate(username,password,token_file)
 
 
@@ -91,3 +92,6 @@ def refresh(token_file):
 		with open(token_file_path(token_file),"w") as f:
 			json.dump(j,f)
 	return j
+
+class PasswordRequired(Exception):
+	pass

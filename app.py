@@ -1,8 +1,6 @@
 import MAX
 
 MAX.connect()
-
-
 students = MAX.get_students()
 
 
