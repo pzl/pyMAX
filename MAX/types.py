@@ -1,23 +1,46 @@
 import datetime
 
+
 class MAXObj(object):
 	"""generic shared parent"""
 	def __init__(self):
 		super(MAXObj, self).__init__()
-
 	def __repr__(self):
 		return f"{self.__class__.__name__}({self.__dict__})"	
 
-	def _parsetime(self,t):
-		proper_tz = ''.join(t.rsplit(':',1))
-		return datetime.datetime.strptime(proper_tz,"%Y-%m-%dT%H:%M:%S.%f%z").time().strftime("%I:%M %p")
+
+class Time(MAXObj):
+	"""Convert wonky dates/times to reasonable objects"""
+	def __init__(self,t):
+		super(Time,self).__init__()
+		if not t:
+			self.time = None
+			return
+		proper_tz = ''.join(t.rsplit(':',1)) #there is an extra colon in the timezone to remove
+		self.time = datetime.datetime.strptime(proper_tz,"%Y-%m-%dT%H:%M:%S.%f%z")
+		if self.time.year == 2000: #it was meant to be a time-only string
+			self.time = self.time.time()
+
+	def __str__(self):
+		if not self.time:
+			return ""
+		if isinstance(self.time,datetime.time):
+			return self.time.strftime("%-I:%M %p")
+		else:
+			return self.time.strftime("%-I:%M:%S %P, %a %-m/%-d")
+
+	def __bool__(self):
+		return not not self.time
+
+	def __eq__(self,other): return self.time == other.time
+	def __lt__(self,other): return self.time < other.time
 
 class Person(MAXObj):
 	"""Generic person class based on MAX fields"""
 	def __init__(self, info):
 		super(Person, self).__init__()
 		for field in ["id","first_name","last_name","photo_url","photo_processing","type"]:
-			self.__dict__[field] = info[field]
+			setattr(self,field,info[field])
 	
 	def __str__(self):
 		return f"{self.first_name} {self.last_name}, {self.type}"
@@ -61,43 +84,44 @@ class InfoSheet(MAXObj):
 	"""Daily Contact Sheet"""
 	def __init__(self, info):
 		super(InfoSheet, self).__init__()
-		for field in ["report_id","student_id","day","created_at","updated_at",
-					  "locked","sent","achievements","request_items",
-					  "teacher_notes","checked_in_at","checked_out_at","schedule_check_in",
-					  "schedule_check_out","parent_request"]:
+		for field in ["report_id","student_id","day","locked","sent",
+					"achievements","request_items", "teacher_notes","parent_request"]:
 			if field in info:
-				self.__dict__[field] = info[field]
-			else:
-				print("DCS report did not contain field: %s" % (field,))
+				setattr(self,field,info[field])
+
+		for field in ["created_at","updated_at","checked_in_at","checked_out_at",
+						"schedule_check_in","schedule_check_out"]:
+				setattr(self,field,Time(info[field]))
 
 
-		self.meals = sorted(list(map(Meal,info['meals'])),key=lambda m: m._time)
+		self.meals = sorted(list(map(Meal,info['meals'])),key=lambda m: m.time)
 		self.messages = list(map(Message,info['messages']))
-		self.naps = sorted(list(map(Nap,info['naps'])),key=lambda n: n._start_time)
-		self.bathroom_visits = sorted(list(map(BathroomVisit, info['bathroom_visits'])),key=lambda b: b._time)
+		self.naps = sorted(list(map(Nap,info['naps'])),key=lambda n: n.start_time)
+		self.bathroom_visits = sorted(list(map(BathroomVisit, info['bathroom_visits'])),key=lambda b: b.time)
 
 class Meal(MAXObj):
 	def __init__(self, info):
 		super(Meal, self).__init__()
-		for field in ['id','time_type','comment','created_at','updated_at']:
+		for field in ['id','time_type','comment']:
 			if field in info:
-				self.__dict__[field] = info[field]
-		self._time = info['time']
-		self.time = self._parsetime(self._time)
+				setattr(self,field,info[field])
+		for field in ['time','created_at','updated_at']:
+			setattr(self,field,Time(info[field]))
+
 		self.foods = list(map(Food,info['entries_attributes']))	
 
 class Food(MAXObj):
 	def __init__(self, info):
 		super(Food, self).__init__()
-		for field in ['id','food_id','category','name','eaten','created_at','updated_at','unit_type']:
+		for field in ['id','food_id','category','name','eaten','unit_type']:
 			if field in info:
-				self.__dict__[field] = info[field]
+				setattr(self,field,info[field])
+		self.created_at = Time(info['created_at'])
+		self.updated_at = Time(info['updated_at'])
+
 	def __str__(self):
 		if self.unit_type == "fractions":
-			if self.eaten == 1:
-				amount = "all"
-			else:
-				amount = "{0:.0f}%".format(self.eaten * 100)
+			amount = "all" if self.eaten ==1 else "{0:.0f}%".format(self.eaten * 100)
 		else:
 			amount = f"{self.eaten} {self.unit_type}"
 		return f"{self.name}, {amount}"
@@ -105,33 +129,34 @@ class Food(MAXObj):
 class Nap(MAXObj):
 	def __init__(self, info):
 		super(Nap, self).__init__()
-		for field in ['id','duration','created_at','updated_at']:
-			if field in info:
-				self.__dict__[field] = info[field]
+		self.id = info['id']
+		self.duration = info['duration']
+		for field in ['start_time','end_time','created_at','updated_at']:
+			setattr(self,field,Time(info[field]))
 
-		self._start_time = info['start_time']
-		self._end_time = info['end_time']
-		self.start_time = self._parsetime(info['start_time'])
-		self.end_time = self._parsetime(info['end_time'])
 
 class BathroomVisit(MAXObj):
 	def __init__(self, info):
 		super(BathroomVisit, self).__init__()
-		for field in ['id','type','diaper_type','bathroom_type','notes','created_at','updated_at']:
+		for field in ['id','type','diaper_type','bathroom_type','notes']:
 			if field in info:
-				self.__dict__[field] = info[field]
-		self._time = info['time']
-		self.time = self._parsetime(info['time'])
+				setattr(self,field,info[field])
+		for field in ['time','created_at','updated_at']:
+			setattr(self,field,Time(info[field]))
+
 
 class Message(MAXObj):
 	"""MAX generic Message"""
 	def __init__(self, info):
 		super(Message, self).__init__()
-		for field in ['id','content','read','read_at','created_at','updated_at',
-					'attachment_url','attachment_file_name','attachment_content_type',
-					'attachment_file_size','attachment_updated_at','system_generated']:
+		for field in ['id','content','read','attachment_url',
+						'attachment_file_name','attachment_content_type',
+						'attachment_file_size','system_generated']:
 			if field in info:
-				self.__dict__[field] = info[field]
+				setattr(self,field,info[field])
+
+		for field in ['read_at','created_at','updated_at','attachment_updated_at']:
+			setattr(self,field,Time(info[field]))
 
 		if 'author' in info:
 			self.author = Person(info['author'])
@@ -143,9 +168,11 @@ class TeacherRequest(MAXObj):
 	"""Teacher request for items from Parent"""
 	def __init__(self, info):
 		super(TeacherRequest, self).__init__()
-		for field in ['id','due_type','created_at','updated_at','due_on','due_at']:
+		for field in ['id','due_type','due_on']:
 			if field in info:
-				self.__dict__[field] = info[field]
+				setattr(self,field,info[field])
+		for field in ['created_at','updated_at','due_at']:
+			setattr(self,field,Time(info[field]))
 
 		self.items = list(map(RequestItem,info['item_ids']))
 		
@@ -153,8 +180,9 @@ class RequestItem(MAXObj):
 	"""A thing the Teacher can request"""
 	def __init__(self, info):
 		super(RequestItem, self).__init__()
-		for field in ['id','name','created_at','updated_at']:
-			if field in info:
-				self.__dict__[field] = info[field]
+		self.id = info['id']
+		self.name = info['name']
+		self.created_at = Time(info['created_at'])
+		self.updated_at = Time(info['updated_at'])
 	def __str__(self):
 		return self.name
