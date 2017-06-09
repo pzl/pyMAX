@@ -67,7 +67,16 @@ def show_info(student):
 
 	nameBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
 	nameBox.pack_start(newLabel(f"<span font='Lato Medium 22'>{student.first_name} {student.last_name}</span>"), False, True, 5)
-	nameBox.pack_start(newLabel("<span font='Lato Light 11'>checked in</span>" if student.checked_in else "<span font='Lato Light 11'>checked out</span>"), False, True, 0)
+	nameTxt = "<span font='Lato Light 11'>checked "
+	nameTxt += "in" if student.checked_in else "out"
+	nameTxt += "</span>"
+	nameBox.pack_start(newLabel(nameTxt), False, True, 0)
+	if student.info.checked_in_at:
+		nameBox.pack_start(newLabel(f"<span font='Lato Light 11'>In: {student.info.checked_in_at}</span>"),False,True,0)
+	if student.info.checked_out_at:
+		nameBox.pack_start(newLabel(f"<span font='Lato Light 11'>Out: {student.info.checked_out_at}</span>"),False,True,0)
+
+
 
 	idBox.pack_start(student_icon, False, True, 10)
 	idBox.pack_start(nameBox, False, True, 0)
