@@ -1,5 +1,7 @@
 __pycache__
 *.sw[op]
 *.py[co]
+*~
+*#
 
 venv
