@@ -19,10 +19,10 @@ def load_data():
 	GLib.idle_add(show_info,student)
 
 
-def url_to_icon(url):
+def url_to_icon(url,size=100):
 	response = urllib.request.urlopen(url)
 	stream = Gio.MemoryInputStream.new_from_data(response.read(),None)
-	return GdkPixbuf.Pixbuf.new_from_stream_at_scale(stream, 100,100,True, None)
+	return GdkPixbuf.Pixbuf.new_from_stream_at_scale(stream, size,size,True, None)
 def newLabel(text):
 	label = Gtk.Label()
 	label.set_justify(Gtk.Justification.LEFT)
@@ -63,7 +63,7 @@ def show_info(student):
 		teachBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=0)
 		for t in student.current_room.teachers:
 			tbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=2)
-			timg = Gtk.Image.new_from_pixbuf(url_to_icon(t.photo_url))
+			timg = Gtk.Image.new_from_pixbuf(url_to_icon(t.photo_url,50))
 			tbox.pack_start(timg, True, True, 0)
 			tbox.pack_start(newLabel(str(t)),True,True,0)
 			teachBox.pack_start(tbox, True, True, 0)
