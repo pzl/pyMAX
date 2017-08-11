@@ -21,13 +21,14 @@ class Time(MAXObj):
 		if self.time.year == 2000: #it was meant to be a time-only string
 			self.time = self.time.time()
 
+		# Time was probably entered wrong. Let's correct this.
+		if self.time.hour > 17:
+			self.time -= datetime.timedelta(hours=12)
+
 	def __str__(self):
 		if not self.time:
 			return ""
-		if isinstance(self.time,datetime.time):
-			return self.time.strftime("%-I:%M %p")
-		else:
-			return self.time.strftime("%-I:%M:%S %P, %a %-m/%-d")
+		return self.time.strftime("%-I:%M%P")
 
 	def __bool__(self):
 		return not not self.time
@@ -84,7 +85,9 @@ class InfoSheet(MAXObj):
 	"""Daily Contact Sheet"""
 	def __init__(self, info):
 		super(InfoSheet, self).__init__()
-		for field in ["report_id","student_id","day","locked","sent",
+		y,m,d = list(map(int,info['day'].split('-')))
+		self.day = datetime.date(y,m,d)
+		for field in ["report_id","student_id","locked","sent",
 					"achievements","request_items", "teacher_notes","parent_request"]:
 			if field in info:
 				setattr(self,field,info[field])
