@@ -88,7 +88,7 @@ class InfoSheet(MAXObj):
 		y,m,d = list(map(int,info['day'].split('-')))
 		self.day = datetime.date(y,m,d)
 		for field in ["report_id","student_id","locked","sent",
-					"achievements","request_items", "teacher_notes","parent_request"]:
+					"achievements", "teacher_notes","parent_request"]:
 			if field in info:
 				setattr(self,field,info[field])
 
@@ -101,6 +101,7 @@ class InfoSheet(MAXObj):
 		self.messages = list(map(Message,info['messages']))
 		self.naps = sorted(list(map(Nap,info['naps'])),key=lambda n: n.start_time)
 		self.bathroom_visits = sorted(list(map(BathroomVisit, info['bathroom_visits'])),key=lambda b: b.time)
+		self.request_items = sorted(list(map(TeacherRequest, info['request_items'])),key=lambda r: r.updated_at)
 
 class Meal(MAXObj):
 	def __init__(self, info):
