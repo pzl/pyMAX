@@ -219,7 +219,9 @@ class InfoPage(Page):
 			if food.category.lower() == "drink":
 				icon = local_img("bottle.svg")
 			else:
-				if os.path.exists("icons/"+food.name.lower()+".png"):
+				if os.path.exists("icons/"+food.name.lower()+".svg"):
+					icon = local_img(food.name.lower()+".svg")
+				elif os.path.exists("icons/"+food.name.lower()+".png"):
 					icon = local_img(food.name.lower()+".png")
 				else:
 					icon = Gtk.Image.new_from_icon_name("avatar-default",Gtk.IconSize.SMALL_TOOLBAR)
