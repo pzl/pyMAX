@@ -28,7 +28,7 @@ class Time(MAXObj):
 	def __str__(self):
 		if not self.time:
 			return ""
-		return self.time.strftime("%-I:%M%P")
+		return self.time.strftime("%-I:%M%p").lower()
 
 	def __bool__(self):
 		return not not self.time
