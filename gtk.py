@@ -144,6 +144,7 @@ class InfoPage(Page):
 		self.events.extend(student.info.bathroom_visits)
 
 		self.events = sorted(self.events,key=lambda x: x.time.time if hasattr(x,'time') else x.start_time.time)
+		self.student = student
 
 		if hasattr(self,'dcs_box') and self.dcs_box:
 			self.dcs_box.destroy()
@@ -211,6 +212,24 @@ class InfoPage(Page):
 				else:
 					add_event = self.make_potty
 				add_event(grid,event)
+
+
+		if self.student.info.messages:
+			self.dcs_box.pack_start(L("<big><b>Messages</b></big>",halign=Gtk.Align.START,margin_top=ROWSPACE*3,margin_bottom=ROWSPACE),False,False,0)
+			msg_grid = Gtk.Grid(orientation=Gtk.Orientation.VERTICAL,column_spacing=COLSPACE,row_spacing=ROWSPACE)
+			msg_grid.row=0
+			self.dcs_box.pack_start(msg_grid,False,False,0)
+			for msg in self.student.info.messages:
+				self.make_dcs_message(msg_grid,msg)
+
+		if self.student.info.request_items:
+			self.dcs_box.pack_start(L("<big><b>Request Items</b></big>",halign=Gtk.Align.START,margin_top=ROWSPACE*3,margin_bottom=ROWSPACE),False,False,0)
+			reqs_grid = Gtk.Grid(orientation=Gtk.Orientation.VERTICAL,column_spacing=COLSPACE,row_spacing=ROWSPACE)
+			reqs_grid.row=0
+			self.dcs_box.pack_start(reqs_grid,False,False,0)
+			for item in self.student.info.request_items:
+				self.make_req(reqs_grid,item)
+
 		self.dcs_box.show_all()
 
 	def make_meal(self,container,meal):
@@ -245,6 +264,21 @@ class InfoPage(Page):
 		if visit.notes:
 			container.attach(L(visit.notes,halign=Gtk.Align.START),2,container.row,1,1)
 		container.row +=1
+
+	def make_dcs_message(self,container,msg):
+		container.attach(L(msg.updated_at,halign=Gtk.Align.END),0,container.row,1,1)
+		container.attach(Gtk.Image.new_from_icon_name("user-offline" if msg.read else "user-available",Gtk.IconSize.SMALL_TOOLBAR),1,container.row,1,1)
+		text = L(msg.content,halign=Gtk.Align.START)
+		text.set_line_wrap(True)
+		container.attach(text,2,container.row,1,1)
+		container.row += 1
+
+	def make_req(self,container,item):
+		container.attach(L(item.updated_at,halign=Gtk.Align.END),0,container.row,1,1)
+		for thing in item.items:
+			container.attach(L(thing.name,halign=Gtk.Align.START),1,container.row,2,1)
+			container.row +=1
+		# @todo: due_on / due_at
 
 class MessagePage(Page):
 	title="Messages"
