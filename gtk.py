@@ -238,7 +238,7 @@ class InfoPage(Page):
 		container.attach(L(visit.time,halign=Gtk.Align.END),0,container.row,1,1)
 		icons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 		for action in visit.diaper_type:
-			icons.pack_start(local_img("drop.svg" if action=='wet' else 'poo.svg'),True,True,0)
+			icons.pack_start(local_img("pee.svg" if action=='wet' else 'poo.svg'),True,True,0)
 		container.attach(icons,1,container.row,1,1)
 		if visit.notes:
 			container.attach(L(visit.notes,halign=Gtk.Align.START),2,container.row,1,1)
