@@ -55,6 +55,7 @@ def connect(username=None,password=None,token_file=None):
 	if not username or not password:
 		raise PasswordRequired("could not find a valid token, username and password must be provided")
 	token = authenticate(username,password,token_file)
+	return token
 
 
 def token_file_path(fp=None):

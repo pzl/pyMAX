@@ -3,7 +3,7 @@ import datetime
 import gi
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk, GLib, GdkPixbuf, Gio
-import threading
+import threading, queue
 import urllib.request
 from pathlib import Path
 import hashlib
@@ -16,13 +16,58 @@ class L(Gtk.Label):
 		super(L,self).__init__(*args,**kwargs)
 		self.set_markup(str(markup))
 
+def passwin(q):
+	dog = Gtk.Dialog(title="Log In")
+	dog.set_modal(True)
+	dog.add_buttons(Gtk.STOCK_CANCEL,Gtk.ResponseType.CANCEL,Gtk.STOCK_OK,Gtk.ResponseType.OK)
 
-def auth():
+
+	container = dog.get_content_area()
+	grid = Gtk.Grid()
+
+
+	grid.attach(L("Username:"),0,0,1,1)
+	user_entry = Gtk.Entry(placeholder_text="Username")
+	grid.attach(user_entry,1,0,1,1)
+
+	grid.attach(L("Password:"),0,1,1,1)
+	pass_entry = Gtk.Entry(placeholder_text="Password",visibility=False)
+	grid.attach(pass_entry,1,1,1,1)
+
+	container.pack_start(grid,True,True,0)
+	container.show_all()
+
+	response = dog.run()
+	if response == Gtk.ResponseType.CANCEL:
+		dog.destroy()
+		# quit app?
+	else:
+		username = user_entry.get_text()
+		password = pass_entry.get_text()
+		user_entry.set_editable(False)
+		pass_entry.set_editable(False)
+		pass_entry.set_progress_fraction(0.5)
+		user_entry.progress_pulse()
+
+		q.put(username)
+		q.put(password)
+		q.put(dog)
+		dog.destroy()
+
+# must be called from Non-GTK thread.
+def auth(username=None,password=None):
 	try:
 		MAX.connect()
 	except MAX.api.PasswordRequired:
-		passwin = Gtk.Window()
-		passwin.show_all()
+		q = queue.Queue()
+		GLib.idle_add(passwin,q)
+		username = q.get()
+		password = q.get()
+		result = MAX.connect(username,password)
+
+		if 'error' in result:
+			return auth()
+
 
 def local_img(filename,size=20):
 	pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale("icons/"+filename,size,size,True)
@@ -155,8 +200,7 @@ class InfoPage(Page):
 		self.show_all()
 
 	def fetch_data(self,date=None):
-		import pickle
-		MAX.connect()
+		auth()
 		student = MAX.get_student_detail(199)
 
 		if date and date != datetime.date.today():
