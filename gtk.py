@@ -274,6 +274,14 @@ class InfoPage(Page):
 			for item in self.student.info.request_items:
 				self.make_req(reqs_grid,item)
 
+		if self.student.info.teacher_notes:
+			self.dcs_box.pack_start(L("<big><b>Teacher Notes</b></big>",halign=Gtk.Align.START,margin_top=ROWSPACE*3,margin_bottom=ROWSPACE),False,False,0)
+			notes = Gtk.Grid(orientation=Gtk.Orientation.VERTICAL,column_spacing=COLSPACE,row_spacing=ROWSPACE)
+			notes.row=0
+			self.dcs_box.pack_start(notes,False,False,0)
+			for note in self.student.info.teacher_notes:
+				self.make_note(notes,note)
+
 		self.dcs_box.show_all()
 
 	def make_meal(self,container,meal):
@@ -327,6 +335,14 @@ class InfoPage(Page):
 			container.attach(L(thing.name,halign=Gtk.Align.START),1,container.row,2,1)
 			container.row +=1
 		# @todo: due_on / due_at
+
+	def make_note(self,container,note):
+		container.attach(L(note.updated_at),0,container.row,1,1)
+		container.attach(Gtk.Image.new_from_icon_name("user-available",Gtk.IconSize.SMALL_TOOLBAR),1,container.row,1,1)
+		text = L(note)
+		text.set_line_wrap(True)
+		container.attach(text,2,container.row,1,1)
+		container.row += 1
 
 class MessagePage(Page):
 	title="Messages"

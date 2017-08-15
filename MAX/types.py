@@ -88,7 +88,7 @@ class InfoSheet(MAXObj):
 		y,m,d = list(map(int,info['day'].split('-')))
 		self.day = datetime.date(y,m,d)
 		for field in ["report_id","student_id","locked","sent",
-					"achievements", "teacher_notes","parent_request"]:
+					"achievements","parent_request"]:
 			if field in info:
 				setattr(self,field,info[field])
 
@@ -102,6 +102,7 @@ class InfoSheet(MAXObj):
 		self.naps = sorted(list(map(Nap,info['naps'])),key=lambda n: n.start_time)
 		self.bathroom_visits = sorted(list(map(BathroomVisit, info['bathroom_visits'])),key=lambda b: b.time)
 		self.request_items = sorted(list(map(TeacherRequest, info['request_items'])),key=lambda r: r.updated_at)
+		self.teacher_notes = sorted(list(map(TeacherNote,info['teacher_notes'])),key=lambda n: n.updated_at)
 
 class Meal(MAXObj):
 	def __init__(self, info):
@@ -190,3 +191,15 @@ class RequestItem(MAXObj):
 		self.updated_at = Time(info['updated_at'])
 	def __str__(self):
 		return self.name
+
+class TeacherNote(MAXObj):
+	"""It's not quite a message, but a 'teacher_notes' on a DCS/Info"""
+	def __init__(self,info):
+		super(TeacherNote,self).__init__()
+		self.id = info['id']
+		self.content = info['content']
+		self.created_at = Time(info['created_at'])
+		self.updated_at = Time(info['updated_at'])
+		self.editor = info['editor']
+	def __str__(self):
+		return self.content+"\n-"+self.editor
