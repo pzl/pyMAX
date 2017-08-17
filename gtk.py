@@ -485,7 +485,7 @@ def main():
 	inbox_page.set_urgent()
 
 	window.show_all()
-	Gtk.main()	
+	GLib.MainLoop().run()
 
 if __name__ == "__main__":
 	main()
