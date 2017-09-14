@@ -302,7 +302,7 @@ class InfoPage(Page):
 			container.row += 1
 		if meal.comment:
 			container.attach(Gtk.Image.new_from_icon_name("user-available",Gtk.IconSize.SMALL_TOOLBAR),0,container.row,1,1)
-			container.attach(meal.comment,1,container.row,2,1)
+			container.attach(L(meal.comment),1,container.row,2,1)
 			container.row +=1
 
 
