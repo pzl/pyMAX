@@ -22,3 +22,4 @@ On linux/OS X:
 - if you are using a virtual environment, you can use pygobject in it with `vext.gi`, which is in `linux.requirements.txt`
 
 
+![screenshot](preview.png)
